@@ -7,12 +7,6 @@ import re
 import tinytag as tnt
 import math
 import threading
-import argparse
-import sys
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-o", "--output", required=True, help="Download file path.")
-args, unknown = parser.parse_known_args()
 
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
@@ -32,7 +26,7 @@ def download(course, duration, url, path):
         if not already_downloaded(f_path, duration):
             if not os.path.exists(path): os.makedirs(path)
             print("{} ...".format(f_name))
-            params = 'ffmpeg -y -headers \"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) ' + \
+            params = resource_path("ffmpeg.exe") + ' -y -headers \"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) ' + \
                 'Gecko/20100101 Firefox/108.0 Host: www.btkakademi.gov.tr Accept: */* Accept-Language: en-US,en;q=0.8,tr-TR;q=0.5,tr;q=0.3 ' + \
                 'Accept-Encoding: gzip, deflate, br DNT: 1 Connection: keep-alive Referer: ' + course + \
                 ' Cookie: locale=tr; Sec-Fetch-Dest: script Sec-Fetch-Mode: no-cors Sec-Fetch-Site: same-origin\" -i ' + f_max_res_url + \
@@ -153,10 +147,9 @@ def start(main_path):
     print("\n_____________________ Kontrol Ediliyor _____________________\n")
     m_download(course, urls, paths)
 
-if args.output != None:
-    if args.output[-1] != "\\":
-        args.output += "\\"
+if __name__=="__main__":
     os.system('mode 60,40')
     os.system('color 8E')
-    print("\n  || BTK Video Downloader ||  \n  ")
-    start(args.output)
+    while KeyboardInterrupt:
+        main_path = input("\n  || BTK Video Downloader ||  >  url.txt nerede: \n\n  ")
+        start(main_path.replace('\\\\', '\\') + "\\\\")
