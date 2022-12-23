@@ -1,4 +1,4 @@
-#### [Güncellendi!]
+#### [v.0.02]
 
 # Kullanımı 
 <img src="./gif/usage.gif"/>
