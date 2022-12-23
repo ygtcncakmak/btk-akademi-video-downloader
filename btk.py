@@ -102,7 +102,7 @@ def get_url(urls):
     formatted = []
     for l in urls:
         url = "https://cinema8.com/api/v1/uscene/rawvideo/flavor/"
-        duration = l.split(" | ")[0]
+        duration = l.split("|")[0].strip()
         code = l.split("/")[-1].split("?")[0]
         if l.split("/")[3] == "raw-video":
             formatted.append(get_duration(duration).__str__() + "|" + url + code)
@@ -121,7 +121,7 @@ def get_duration(t):
     durations = t.split(' ')[::-1]
     total = 0
     for i in range(0, len(durations)):
-        total += int(re.findall(r'\d+', durations[i])[0]) * pow(60, i)
+        total += int(re.findall(r'\d+', durations[i].strip())[0]) * pow(60, i)
     return total
 
 def correct_string(string):
