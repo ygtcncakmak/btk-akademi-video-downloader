@@ -7,7 +7,7 @@
 
 # Python script ile indirmek için:
 ```
-python btk.py -o "url.txt'nin bulunduğu klasörün yolu"
+python btk-o.py -o "url.txt'nin bulunduğu klasörün yolu"
 ```
 
 <br>
