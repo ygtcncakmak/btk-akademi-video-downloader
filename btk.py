@@ -8,6 +8,7 @@ import tinytag as tnt
 import math
 import threading
 import argparse
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--output", required=True, help="Download file path.")
