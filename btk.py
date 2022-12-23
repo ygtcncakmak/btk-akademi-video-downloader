@@ -7,6 +7,7 @@ import re
 import tinytag as tnt
 import math
 import threading
+import sys
 
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
