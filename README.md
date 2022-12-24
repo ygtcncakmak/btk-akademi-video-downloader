@@ -1,4 +1,4 @@
-#### [Güncellendi!]
+#### [v.0.02]
 
 # Kullanımı 
 <img src="./gif/usage.gif"/>
@@ -7,7 +7,7 @@
 
 # Python script ile indirmek için:
 ```
-python btk.py -o "url.txt'nin bulunduğu klasörün yolu"
+python btk-o.py -o "url.txt'nin bulunduğu klasörün yolu"
 ```
 
 <br>
