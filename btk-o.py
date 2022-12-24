@@ -1,14 +1,13 @@
-import requests
-import subprocess
 import os
+import re
+import sys
 import time
 import m3u8
-import re
-import tinytag as tnt
 import math
-import threading
+import requests
 import argparse
-import sys
+import tinytag as tnt
+from command_runner import command_runner
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--output", required=True, help="Download file path.")
@@ -17,8 +16,6 @@ args, unknown = parser.parse_known_args()
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
-
-p_ctrl=[0]
 
 def download(course, duration, url, path):
     try:
@@ -32,61 +29,34 @@ def download(course, duration, url, path):
         if not already_downloaded(f_path, duration):
             if not os.path.exists(path): os.makedirs(path)
             print("{} ...".format(f_name))
-            params = 'ffmpeg -y -headers \"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) ' + \
+
+            params = resource_path("ffmpeg.exe") + ' -y -headers \"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) ' + \
                 'Gecko/20100101 Firefox/108.0 Host: www.btkakademi.gov.tr Accept: */* Accept-Language: en-US,en;q=0.8,tr-TR;q=0.5,tr;q=0.3 ' + \
                 'Accept-Encoding: gzip, deflate, br DNT: 1 Connection: keep-alive Referer: ' + course + \
                 ' Cookie: locale=tr; Sec-Fetch-Dest: script Sec-Fetch-Mode: no-cors Sec-Fetch-Site: same-origin\" -i ' + f_max_res_url + \
                 ' -bsf:a aac_adtstoasc -vcodec copy -c copy ' + '\"' + f_path + '\"'
             
-            process = subprocess.Popen(params, encoding='UTF-8', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            d_thread = threading.Thread(target=start_process, args=(process,))
-            d_thread.start()
+            err_code, stdout, stderr = command_runner(params, timeout=90, encoding='utf-8', method='monitor', \
+                                                        live_output=False, stdout=False, stderr=False, split_streams=True)
 
-            p_ctrl[0],temp,t_out = 0,-1,0
-            while True:
-                #print(p_ctrl[0])
-                if p_ctrl[0] == -1: 
-                    process.kill()
-                    download(course, duration, url, path)
-                    return
-                if p_ctrl[0] == temp: 
-                    t_out += 1
-                    if t_out >= 20:
-                        print("Timeout gerceklesti...")
-                        process.kill()
-                        download(course, duration, url, path)
-                        return
-                else: t_out = 0
-                if p_ctrl[0] == -2:
-                    if already_downloaded(f_path, duration):
-                        return
-                    else:
-                        download(course, duration, url, path)
-                        return
-                temp = p_ctrl[0]
+            if       err_code ==    0 and already_downloaded(f_path, duration): return
+            else:
+                if   err_code ==    0: print("Corrupted, downloading again... [error: {}]".format(err_code))
+                elif err_code ==    1: print("FFmpeg occured error... [error: {}]"        .format(err_code))
+                elif err_code == -254: print("Process timeout... [error: {}]"             .format(err_code))
+                elif err_code == -252: print("Keyboard interrupt... [error: {}]"          .format(err_code))
+                else:                  print("Invalid error... [error: {}]"               .format(err_code))
                 time.sleep(1)
+                download(course, duration, url, path)
+                return
                 
         else:print("{} +".format(f_name))
 
     except:
-        print("Tekrar baglaniliyor...")
+        print("Reconnecting in 3 sec...")
         time.sleep(3)
         download(course, duration, url, path)
         return
-
-def start_process(process):
-    while not process.poll(): # process not terminated
-        if process.stdout: # process running and prompting
-            std_out = process.stdout.readline()
-            if std_out: # process running and prompting
-                p_ctrl[0] += 1
-                if 'error' in std_out: # process running but prompted error
-                    p_ctrl[0] = -1
-                    return
-            else: # process finished with or without error
-                p_ctrl[0] = -2
-                return
-        time.sleep(0.1)
 
 def m_download(course, urls, paths):
     urls_count = sum(len(u) for u in urls)
@@ -109,14 +79,10 @@ def get_url(urls):
             formatted.append(get_duration(duration).__str__() + "|" + url + code)
     return formatted
 
-def connection():
-    try: return requests.get('http://google.com', timeout=5)
-    except: return False
-
 def already_downloaded(f_path, duration):
     return  os.path.exists(f_path) and \
             tnt.TinyTag.get(f_path).duration != None and \
-            int(duration) == math.trunc(tnt.TinyTag.get(f_path).duration)
+            abs(int(duration) - math.trunc(tnt.TinyTag.get(f_path).duration)) <= 3
 
 def get_duration(t):
     durations = t.split(' ')[::-1]

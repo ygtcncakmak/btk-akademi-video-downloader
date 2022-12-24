@@ -42,6 +42,7 @@ def download(course, duration, url, path):
                 #print(p_ctrl[0])
                 if p_ctrl[0] == -1: 
                     process.kill()
+                    print("Ffmpeg error...")
                     download(course, duration, url, path)
                     return
                 if p_ctrl[0] == temp: 
@@ -56,6 +57,7 @@ def download(course, duration, url, path):
                     if already_downloaded(f_path, duration):
                         return
                     else:
+                        print("Tekrar indiriliyor...")
                         download(course, duration, url, path)
                         return
                 temp = p_ctrl[0]
@@ -111,7 +113,7 @@ def connection():
 def already_downloaded(f_path, duration):
     return  os.path.exists(f_path) and \
             tnt.TinyTag.get(f_path).duration != None and \
-            int(duration) == math.trunc(tnt.TinyTag.get(f_path).duration)
+            abs(int(duration) - math.trunc(tnt.TinyTag.get(f_path).duration)) <= 3
 
 def get_duration(t):
     durations = t.split(' ')[::-1]
