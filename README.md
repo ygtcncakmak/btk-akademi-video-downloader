@@ -1,9 +1,8 @@
-#### [v.0.02]
+#### [v.0.03]
 
 # Kullanımı 
 <img src="./gif/usage.gif"/>
 • Kilitli videolar açıldıkdan sonra indirilebilir. <br>
-• Nadiren videolar ile sağ menüde yazılan video süreleri uyuşmadığında indirme işlemi sırasında takılıp sürekli aynı videoyu indirmeye çalışabilir, elle url.txt dosyasından videonun gerçek dakika ve saniyesinin düzeltilmesi gerekir. <br>
 
 # Python script ile indirmek için:
 ```
