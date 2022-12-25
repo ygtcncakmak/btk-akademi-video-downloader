@@ -1,4 +1,4 @@
-#### [v.0.03]
+#### [v0.03]
 
 # Kullanımı 
 <img src="./gif/usage.gif"/>
