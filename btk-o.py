@@ -8,6 +8,8 @@ import requests
 import argparse
 import tinytag as tnt
 from command_runner import command_runner
+from ctypes import windll, byref
+from ctypes.wintypes import SMALL_RECT
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--output", required=True, help="Download file path.")
@@ -41,11 +43,11 @@ def download(course, duration, url, path):
 
             if       err_code ==    0 and already_downloaded(f_path, duration): return
             else:
-                if   err_code ==    0: print("Corrupted, downloading again... [error: {}]".format(err_code))
-                elif err_code ==    1: print("FFmpeg occured error... [error: {}]"        .format(err_code))
-                elif err_code == -254: print("Process timeout... [error: {}]"             .format(err_code))
-                elif err_code == -252: print("Keyboard interrupt... [error: {}]"          .format(err_code))
-                else:                  print("Invalid error... [error: {}]"               .format(err_code))
+                if   err_code ==    0: print("  Corrupted, downloading again... [error: {}]".format(err_code))
+                elif err_code ==    1: print("  FFmpeg occured error... [error: {}]"        .format(err_code))
+                elif err_code == -254: print("  Process timeout... [error: {}]"             .format(err_code))
+                elif err_code == -252: print("  Keyboard interrupt... [error: {}]"          .format(err_code))
+                else:                  print("  Invalid error... [error: {}]"               .format(err_code))
                 time.sleep(1)
                 download(course, duration, url, path)
                 return
@@ -53,7 +55,7 @@ def download(course, duration, url, path):
         else:print("{} +".format(f_name))
 
     except:
-        print("Reconnecting in 3 sec...")
+        print("  Reconnecting in 3 sec...")
         time.sleep(3)
         download(course, duration, url, path)
         return
@@ -63,11 +65,11 @@ def m_download(course, urls, paths):
     for i in range(len(urls)):
         for j in range(len(urls[i])):
             downloaded = sum(len(u) for u in urls[:i])
-            print(downloaded+j+1, "/", urls_count, paths[i].split("\\")[-1], end = ': ')
+            print("  ", downloaded+j+1, "/", urls_count, paths[i].split("\\")[-1], end = ': ')
             duration = urls[i][j].split('|')[0]
             url = urls[i][j].split('|')[1]
             download(course, duration, url, paths[i])
-    print("Bitti!")
+    print("  Bitti!")
 
 def get_url(urls):
     formatted = []
@@ -82,14 +84,14 @@ def get_url(urls):
 def already_downloaded(f_path, duration):
     return  os.path.exists(f_path) and \
             tnt.TinyTag.get(f_path).duration != None and \
-            abs(int(duration) - math.trunc(tnt.TinyTag.get(f_path).duration)) <= 3
+            abs(int(duration) - math.trunc(tnt.TinyTag.get(f_path).duration)) <= 5
 
 def get_duration(t):
-    durations = t.split(' ')[::-1]
-    total = 0
-    for i in range(0, len(durations)):
-        total += int(re.findall(r'\d+', durations[i].strip())[0]) * pow(60, i)
-    return total
+    times = []
+    for ch in ('sa', 'd', 'sn'):
+        c = re.findall(r'\d+\D*' + ch, t)
+        times.append(int(re.findall(r'\d+', c[0])[0]) if len(c) != 0 else 0)
+    return (times[0]*60*60 + times[1]*60 + times[2])
 
 def correct_string(string):
     corrected = ""
@@ -114,15 +116,15 @@ def get_url_and_path(main_folder_path, txt):
 
 def start(main_path):
     course, urls, paths = get_url_and_path(main_path, main_path + "\\url.txt")
-    print("\n__________________ Indirme Islemi Basladi __________________\n")
+    print("\n  _______________ Indirme Islemi Basladi _______________\n")
     m_download(course, urls, paths)
-    print("\n_____________________ Kontrol Ediliyor _____________________\n")
+    print("\n  __________________ Kontrol Ediliyor __________________\n")
     m_download(course, urls, paths)
 
 if args.output != None:
     if args.output[-1] != "\\":
         args.output += "\\"
-    os.system('mode 60,40')
+    windll.kernel32.SetConsoleWindowInfo(windll.kernel32.GetStdHandle(-11),True,byref(SMALL_RECT(0,0,60,40)))
     os.system('color 8E')
-    print("\n  || BTK Video Downloader ||  \n  ")
+    print("\n  || BTK Video Downloader v.0.0.3 ||  \n  ")
     start(args.output)
